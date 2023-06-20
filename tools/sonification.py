@@ -1,11 +1,7 @@
-import time
 from pyo import *
 from plux_device import In_BiosignalsPlux
 
-import matplotlib.pyplot as plt
-
 import numpy as np
-
 
 class SoundGenerator():
     def __init__(self):
@@ -30,8 +26,10 @@ class SoundGenerator():
         self.s.stop()
 
 
-class BioSoundScape():
-    def __init__(self):
+class BioSound():
+    def __init__(self, mac="00:07:80:8C:AD:C9", fs=1000):
+        self.mac = mac
+        self.fs = fs
         self.n_frames = 128  # size of buffer
         self.n_i = 0  # index in buffer
         self.arr = []
@@ -44,7 +42,7 @@ class BioSoundScape():
         :return:
         """
         self.sound = SoundGenerator()
-        self.device = In_BiosignalsPlux("00:07:80:8C:AD:C9", freq=1000)  # biosignals device
+        self.device = In_BiosignalsPlux(self.mac, freq=self.fs)  # biosignals device
 
     def start(self):
         # start pyo
