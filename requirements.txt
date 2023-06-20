@@ -1,0 +1,8 @@
+pyo
+numpy
+matplotlib
+scipy
+novainstrumentation
+wxpython
+mido
+neurokit2
