@@ -1,6 +1,5 @@
 from tools.sonification import BioSound
-import time
 
-sonify = BioSound(example="example2", signal=["EMG"])
+sonify = BioSound(example="example5", signal=["EMG"], n_frames=1024)
 sonify.setup()
 sonify.start()

@@ -1,5 +1,5 @@
 import time
-import plux
+from tools import plux
 import numpy as np
 
 def noop (*args, **kwargs):
@@ -25,12 +25,12 @@ class In_BiosignalsPlux():
     Requires the plux libaray.
     """
 
-    def __init__(self, adr, freq, n_bits=16, on_data=noop):
+    def __init__(self, adr, freq, n_bits=16, on_data=noop, signal=["EMG"]):
 
         self.adr = adr
         self.freq = freq
         self.n_bits = n_bits
-        self.inputConfiguration() #ask user to put the configuration of the bioplux device
+        self.types = [self.identifySensorType(channel_name) for channel_name in signal]
         self.t0 = time.time_ns()
         self.on_data = on_data
         self.device = NewDevice(self.adr)
@@ -57,14 +57,6 @@ class In_BiosignalsPlux():
         elif("EDA" in name):
             self.transferFunction = self.edaTF
             return "EDA"
-
-    def inputConfiguration(self):
-        inputList = input("List the sensors connected on the Bioplux Device (Follow this structure ACC_X, ACC_Y, ACC_Z): ")
-        self.sensorsList = list(inputList.split(","))
-        print(self.sensorsList)
-        self.channel_names = self.sensorsList
-        self.types = [self.identifySensorType(channel_name) for channel_name in self.channel_names]
-
 
     def _set_on_data(self, fn):
         self.on_data = fn
@@ -124,7 +116,7 @@ class In_BiosignalsPlux():
         VCC = 3  # in volts
         gain = 1019
 
-        return (((data / (2 ** self.n_bits)) - 0.5) * VCC) / gain
+        return 1000*(((data / (2 ** self.n_bits)) - 0.5) * VCC) / gain
 
     def edaTF(self, data):
         VCC = 3  # in volts
