@@ -1,0 +1,33 @@
+QPushButton {
+    background-image: ICON_REPLACE;
+    background-position: left center;
+    background-repeat: no-repeat;
+    background-color: rgb(27, 29, 35);
+    text-align: center;
+}
+QPushButton[Active=true] {
+    background-image: ICON_REPLACE;
+    background-position: left center;
+    background-repeat: no-repeat;
+    border: none;
+    background-color: rgb(27, 29, 35);
+    text-align: center;
+}
+QPushButton:hover {
+    background-color: rgb(33, 37, 43);
+    border-left: 28px solid rgb(33, 37, 43);
+}
+QPushButton:pressed {
+    background-color: rgb(85, 170, 255);
+    border-left: 28px solid rgb(85, 170, 255);
+}
+
+QComboBox{
+    background-color: rgb(33, 37, 43);
+}
+
+PlotWidget {
+    border-radius: 2px;
+    background-color: rgb(255, 255, 255);
+    position: 2px
+}

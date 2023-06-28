@@ -6,3 +6,9 @@ novainstrumentation
 wxpython
 mido
 neurokit2
+pyqtgraph
+pyqt5
+pyqt5-tools
+sounddevice
+pyaudio
+PySide2

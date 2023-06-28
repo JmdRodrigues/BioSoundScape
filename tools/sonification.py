@@ -3,23 +3,29 @@ from tools.plux_device import In_BiosignalsPlux
 
 import numpy as np
 
+def noop():
+    pass
+
 class SoundGenerator():
-    def __init__(self, example="example0"):
+    def __init__(self, example="example0", plot_duration=3, update_spectrum_interval=0.05, on_data=noop):
         self.s = Server().boot()
+        self.duration = plot_duration  # Recording duration in seconds
+        # sample_rate = 44100  # Sample rate (adjust if necessary)
+        # self.frame_update = update_spectrum_interval
+        self.frame_update = 0.01
+        # Initialize the recording buffer
+        self.num_frames = int(self.duration//self.frame_update)
+        # self.spec_buffer = np.zeros((self.num_frames, 512))
+        # self.x_spec_buffer = np.zeros(self.num_frames)
+        # self.freq_buffer = np.zeros(512)
+        self.frame_cnt = 0
+        # self.x_index = x_index
+
+        self.on_data = on_data
 
         if(example=="example0"):
-            self.freq_slider = SigTo(value=100, time=0.001, init=100)
-            self.amp_slider = SigTo(value=0.3, time=0.025, init=0)
-
-            snd = HarmTable([0.5, 0, 0.33, 0, .2, 0, .143, 0, .111])
-            self.scl = EventScale(root="C", scale="major", first=4, octaves=3)
-            self.scl_ind = SigTo(value=self.scl[0], time=0.025, init=1)
-            # self.e = Events(midinote=self.scl_ind, beat=1, dur=2)
-            # self.osc = Sine(freq=self.freq_slider, mul=self.amp_slider)
-            self.osc = Sine(freq=440, mul=0.3)
-            # self.osc = Sine(freq=midiToHz(self.scl[0]), mul=0.3)
-
-        if(example == "example1"):
+            self.example0_init()
+        elif(example == "example1"):
             self.example1_init_()
         elif (example == "example2"):
             self.example2_init_()
@@ -27,16 +33,40 @@ class SoundGenerator():
             self.example3_init_()
         elif (example == "example5"):
             self.example5_init_()
+
+    def example0_init(self):
+        self.freq_slider = SigTo(value=100, time=0.001, init=100)
+        self.amp_slider = SigTo(value=0.3, time=0.025, init=0)
+
+        snd = HarmTable([0.5, 0, 0.33, 0, .2, 0, .143, 0, .111])
+        self.scl = EventScale(root="C", scale="major", first=4, octaves=3)
+        self.scl_ind = SigTo(value=self.scl[0], time=0.025, init=1)
+        # self.e = Events(midinote=self.scl_ind, beat=1, dur=2)
+        # self.osc = Sine(freq=self.freq_slider, mul=self.amp_slider)
+        self.osc = Sine(freq=440, mul=0.3)
+        self.reader = Spectrum(self.osc, function=self.on_data)
+        #spectrum data retrived every 10 ms
+        self.reader.polltime(self.frame_update)
+        # self.osc = Sine(freq=midiToHz(self.scl[0]), mul=0.3)
     def example1_init_(self):
-        self.b = Thresh(SigTo(0), threshold=[0.025], dir=2)
+        # self.b = Thresh(SigTo(0), threshold=[0.025], dir=2)
         # self.env = CosTable([(0, 0), (100, 0.5), (1024, 0.5), (7000, 0.5), (8192, 0)])
         self.env = TriangleTable(order=10)
-        self.amp = TrigEnv(self.b, table=self.env, dur=0.5, mul=.7)
+        # self.amp = TrigEnv(self.b, table=self.env, dur=0.5, mul=.7)
+        self.amp = 0
         self.scl = [midiToHz(i) for i in EventScale(root="G#", scale="majorPenta", first=4, octaves=2, type=0)]
         self.freq = TrigChoice(self.b, self.scl)
 
         self.sine = Sine(freq=[self.freq, self.freq], mul=self.amp * .2)
         self.sine2 = Sine(freq=[self.freq, self.freq], mul=self.amp * .2)
+        g_sharp_freq = 277.183
+        delta_ = 2
+        nbr_waves = 50
+        car = [random.triangular(g_sharp_freq - delta_, g_sharp_freq + delta_) for i in range(nbr_waves)]
+        rat = [random.choice([.25, .5, 1, 1.25, 1.5, 2]) for i in range(nbr_waves)]
+        self.fm = FM(carrier=car, ratio=rat, index=SigTo(0), mul=1.5 / nbr_waves).out()
+        self.reader = Spectrum(self.fm, function=self.on_data)
+        self.reader.polltime(self.frame_update)
 
     def example2_init_(self):
         self.b = Thresh(SigTo(0), threshold=[0.025], dir=2)
@@ -45,8 +75,8 @@ class SoundGenerator():
         self.scl = [midiToHz(i) for i in EventScale(root="G#", scale="majorPenta", first=4, octaves=2, type=0)]
         self.freq = TrigChoice(self.b, self.scl)
 
-        self.sine = Sine(freq=[self.freq, self.freq], mul=self.amp * .5).out()
-        self.sine2 = Sine(freq=[self.freq, self.freq], mul=self.amp * .5).out(1)
+        self.sine = Sine(freq=[self.freq, self.freq], mul=self.amp * .5)
+        self.sine2 = Sine(freq=[self.freq, self.freq], mul=self.amp * .5)
 
         g_sharp_freq = 277.183
         delta_ = 2
@@ -54,17 +84,24 @@ class SoundGenerator():
         car = [random.triangular(g_sharp_freq - delta_, g_sharp_freq + delta_) for i in range(nbr_waves)]
         rat = [random.choice([.25, .5, 1, 1.25, 1.5, 2]) for i in range(nbr_waves)]
         self.fm = FM(carrier=car, ratio=rat, index=SigTo(0), mul=1.5 / nbr_waves).out()
+
+        self.reader = Spectrum(self.sine + self.fm, function=self.on_data)
+        self.reader.polltime(self.frame_update)
+
+        # self.src_output = Selector([self.sine, self.sine2, self.fm]).out()
+        # self.fft_ = FFT(self.src_output)
 
 
     def example3_init_(self):
-        self.b = Thresh(SigTo(0), threshold=[0.2], dir=0)
+        # self.b = Thresh(SigTo(0), threshold=[0.2], dir=0)
         self.env = CosTable([(0, 0), (100, 0.5), (1024, 0.5), (7000, 0.5), (8192, 0)])
-        self.amp = TrigEnv(self.b, table=self.env, dur=1, mul=.6)
+        # self.amp = TrigEnv(self.b, table=self.env, dur=1, mul=.6)
+        self.amp = 0
         self.scl = [midiToHz(i) for i in EventScale(root="G#", scale="majorPenta", first=4, octaves=2, type=0)]
-        self.freq = TrigChoice(self.b, self.scl)
+        # self.freq = TrigChoice(self.b, self.scl)
 
-        self.sine = Sine(freq=[self.freq, self.freq], mul=self.amp * .5).out()
-        self.sine2 = Sine(freq=[self.freq, self.freq], mul=self.amp * .5).out(1)
+        # self.sine = Sine(freq=[self.freq, self.freq], mul=self.amp * .5).out()
+        # self.sine2 = Sine(freq=[self.freq, self.freq], mul=self.amp * .5).out(1)
 
         g_sharp_freq = 277.183
         delta_ = 2
@@ -72,6 +109,9 @@ class SoundGenerator():
         car = [random.triangular(g_sharp_freq - delta_, g_sharp_freq + delta_) for i in range(nbr_waves)]
         rat = [random.choice([.25, .5, 1, 1.25, 1.5, 2]) for i in range(nbr_waves)]
         self.fm = FM(carrier=car, ratio=rat, index=SigTo(0), mul=1.5 / nbr_waves).out()
+
+        self.reader = Spectrum(self.fm, function=self.on_data)
+        self.reader.polltime(self.frame_update)
 
     def example5_init_(self):
         self.b = Thresh(SigTo(0), threshold=[0.125], dir=2)
@@ -89,6 +129,32 @@ class SoundGenerator():
         car = [random.triangular(g_sharp_freq - delta_, g_sharp_freq + delta_) for i in range(nbr_waves)]
         rat = [random.choice([.25, .5, 1, 1.25, 1.5, 2]) for i in range(nbr_waves)]
         self.fm = FM(carrier=car, ratio=rat, index=SigTo(0), mul=1.5 / nbr_waves).out()
+
+        self.reader = Spectrum(self.sine + self.sine2 + self.fm, function=self.on_data)
+        self.reader.polltime(self.frame_update)
+
+    def get_spectrum_data(self, indata):
+        """
+        Override function from Pyo Spectrum function. It delivers the data as a list of lists
+        Each list has the values for each stream.
+        In each stream, a list of tuples with 512 samples represents the frequency magnitude of the signal:
+        [(0, mag1), (1, mag2), (2, mag3), ... (512, mag512)]
+        The frequency range goes from 0 to 22050 Hz (half the sampling frequency of the audio waveform).
+        """
+        x, y = zip(*indata[0])
+        # print(self.x_index[-1])
+        if (self.frame_cnt < self.num_frames):
+            self.spec_buffer[self.frame_cnt, list(x)] = np.abs(np.max(y)-y)
+            self.x_spec_buffer[self.frame_cnt] = self.x_index[-1]
+            self.frame_cnt += 1
+        else:
+            self.spec_buffer[0:-1, :] = self.spec_buffer[1:, :]
+            self.x_spec_buffer[0:-1] = self.x_spec_buffer[1:]
+            self.spec_buffer[-1, list(x)] = np.abs(np.max(y) - y)
+            self.x_spec_buffer[-1] = self.x_index[-1]
+            self.frame_cnt += 1
+
+        self.freq_buffer = np.abs(np.max(y)-y)
 
     def start(self):
         self.s.start()
@@ -166,7 +232,7 @@ class BioSound():
 
     def example3_ondata(self, nseg, fn):
         # self.store_buffer(fn)
-        self.sound.b.setInput(Sig(self.device.transferFunction(fn[0])))
+        # self.sound.b.setInput(Sig(self.device.transferFunction(fn[0])))
         self.sound.fm.setIndex(10*Sig(self.device.transferFunction(fn[0])))
     def example5_ondata(self, nseg, fn):
         self.store_buffer(fn)

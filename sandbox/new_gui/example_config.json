@@ -1,0 +1,8 @@
+{
+  "example0": {"sr": 250, "signal": "ECG", "mac": "00:07:80:8C:AD:C9", "tag": "0"},
+  "example1": {"sr": 1000, "signal": "EMG", "mac": "00:07:80:8C:AD:C9", "tag": "1"},
+  "example2": {"sr": 1000, "signal": "EMG", "mac": "00:07:80:8C:AD:C9", "tag": "2"},
+  "example3": {"sr": 1000, "signal": "ACC_X", "mac": "00:07:80:8C:AD:C9", "tag": "3"},
+  "example4": {"sr": 1000, "signal": "ACC_X", "mac": "00:07:80:8C:AD:C9", "tag": "4"},
+  "example5": {"sr": 1000, "signal": "ACC_X", "mac": "00:07:80:8C:AD:C9", "tag": "5"}
+}

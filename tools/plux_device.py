@@ -35,6 +35,7 @@ class In_BiosignalsPlux():
         self.on_data = on_data
         self.device = NewDevice(self.adr)
 
+        print(self.types)
     def identifySensorType(self, name):
         """
         Identify sensor type and define transfer function
@@ -86,7 +87,6 @@ class In_BiosignalsPlux():
         # 0x07 ---> 00000111 | Three channels are active.
 
         self.device.start(self.freq, [channel_src])
-
         # calls self.device.onRawFrame until it returns True
         self.device.loop()
 
@@ -94,7 +94,7 @@ class In_BiosignalsPlux():
         """
         If data is an accelerometer, get calibration values
         """
-        calib_file = np.loadtxt("data/acc_calibration/acc_calibration_0007808CADC9_2023-06-09_10-38-11.txt")
+        calib_file = np.loadtxt("../data/acc_calibration/acc_calibration_0007808CADC9_2023-06-09_10-38-11.txt")
         self.C_X_min = min(calib_file[:, 2]); self.C_X_max = max(calib_file[:, 2])
         C_Y_min = min(calib_file[:, 3]); C_Y_max = max(calib_file[:, 3])
         C_Z_min = min(calib_file[:, 4]); C_Z_max = max(calib_file[:, 4])

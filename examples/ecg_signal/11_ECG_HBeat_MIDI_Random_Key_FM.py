@@ -24,5 +24,4 @@ rat = [random.choice([.25, .5, 1, 1.25, 1.5, 2]) for i in range(10)]
 ind = [random.randint(2, 6) for i in range(10)]
 fm = FM(carrier=car, ratio=rat, index=sf_player, mul=.05).out()
 
-
 s.gui(locals())

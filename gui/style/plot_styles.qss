@@ -1,0 +1,9 @@
+PlotWidget {
+    border-radius: 2px;
+    background-color: rgb(255, 255, 255);
+    position: 2px
+}
+
+PlotWidget#plot {
+    background-color: rgb(255, 255, 255);
+}

@@ -20,6 +20,6 @@ snd_t = HarmTable([1,0,.33,0,.2,0,.143,0,.111])
 a = SineLoop(freq=notes['pitch'], feedback=.1, mul=env).out()
 b = SineLoop(freq=notes['pitch']*1.005, feedback=.1, mul=env).out(1)
 
-notes.keyboard()
+# notes.keyboard()
 
 s.gui(locals())
