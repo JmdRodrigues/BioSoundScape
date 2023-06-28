@@ -64,7 +64,7 @@ class In_BiosignalsPlux():
 
     def _onstop(self):
         self.device.stop()
-        self.device.close()
+
 
     def _onstart(self):
         """

@@ -12,7 +12,7 @@ class SoundGenerator():
         self.duration = plot_duration  # Recording duration in seconds
         # sample_rate = 44100  # Sample rate (adjust if necessary)
         # self.frame_update = update_spectrum_interval
-        self.frame_update = 0.01
+        self.frame_update = 0.1
         # Initialize the recording buffer
         self.num_frames = int(self.duration//self.frame_update)
         # self.spec_buffer = np.zeros((self.num_frames, 512))
@@ -69,13 +69,16 @@ class SoundGenerator():
         self.reader.polltime(self.frame_update)
 
     def example2_init_(self):
-        self.b = Thresh(SigTo(0), threshold=[0.025], dir=2)
+        """ self.b = Thresh(SigTo(0), threshold=[0.025], dir=2)
         self.env = CosTable([(0, 0.5), (100, 0.5), (1024, 0.5), (7000, 0.5), (8192, 0.5)])
         self.amp = TrigEnv(self.b, table=self.env, dur=0.5, mul=.3)
         self.scl = [midiToHz(i) for i in EventScale(root="G#", scale="majorPenta", first=4, octaves=2, type=0)]
-        self.freq = TrigChoice(self.b, self.scl)
+        self.freq = TrigChoice(self.b, self.scl) """
 
-        self.sine = Sine(freq=[self.freq, self.freq], mul=self.amp * .5)
+        self.freq = 440
+        self.amp = 1
+
+        self.sine = Sine(freq=[self.freq, self.freq], mul=self.amp * .5).out()
         self.sine2 = Sine(freq=[self.freq, self.freq], mul=self.amp * .5)
 
         g_sharp_freq = 277.183

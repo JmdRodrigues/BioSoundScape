@@ -1,16 +1,10 @@
-################################################################################
-##
-## BY: WANDERSON M.PIMENTA
-## PROJECT MADE WITH: Qt Designer and PySide2
-## V: 1.0.0
-##
-################################################################################
-
 import sys
 import platform
 import json
 import time
 import sched
+
+sys.path.insert(1, "../../")
 
 import numpy as np
 
@@ -55,9 +49,10 @@ class Biosignals():
 
         self.shared_index = mp.RawArray('d', range(self.buffer_size))
         self.shared_values = mp.RawArray('d', range(self.buffer_size))
+        
         self.plux_connected = mp.RawValue('i', 0)
 
-    def run(self, biosig_type):
+    def run(self, biosig_type, stop_event):
         cnt_ = 0
         while cnt_ <= 3:
             try:
@@ -77,6 +72,7 @@ class Biosignals():
         if(self.plux_connected.value == 1):
             self.device._onstart()
 
+
     def receive_buffer(self, nseq, fn):
         if (self.n_i < self.buffer_size):
             self.shared_index[self.n_i] = nseq
@@ -88,25 +84,38 @@ class Biosignals():
             self.shared_index[-1] = nseq
             self.shared_values[-1] = self.device.transferFunction(fn[0])
             self.n_i += 1
+        
+        if(self.event.is_set()):
+            self.device._onstop()
+        
 
     def launch_biosignals(self):
         """
             source: launch app for streaming OpenSignals Data
         """
-        process = mp.Process(
+        self.event = mp.Event()
+        self.process = mp.Process(
             name='biosignalsplux',
             target=self.run,
-            args=[self.signal]
+            args=[self.signal, self.event]
         )
-        process.start()
+        self.process.start()
+    
+    def terminate_biosignal(self):
+        self.event.set()
+        time.sleep(0.25)
+        self.process.terminate()
+        self.process.join()
 
 class Sound():
+    #TODO: we still need to verify why some beeps appear in the output sound. I noticed it is related with some blocking mechanism in the processing stage. 
     def __init__(self, plot_duration, spectrum_update, num_frames, shared_array):
     # def __init__(self, plot_duration, spectrum_update, num_frames):
         self.plot_duration = plot_duration
-        self.spectrum_update = spectrum_update
+        #self.spectrum_update = spectrum_update
+        self.spectrum_update = 0.1
         self.num_frames = num_frames
-
+        
         # Initialize the recording buffer
         self.frame_cnt = 0  # initialized frame cnt
         self.shared_spec_buffer = mp.RawArray('d', range(self.num_frames * 512))
@@ -114,15 +123,21 @@ class Sound():
 
         self.sound_connected = mp.RawValue('i', 0)
         self.shared_modulator = shared_array
+    
         # print(self.shared_modulator)
 
-    def run(self):
+    def run(self, event):
         self.sound = SoundGenerator("example2", self.plot_duration, self.spectrum_update, on_data=self.receive_buffer)
         self.sound.start()
         self.sound_connected.value = 1
         self.init_modulation()
-        while True:
+        while not event.is_set():
             pass
+        self.stop()
+    
+    def stop(self):
+        self.scheduler.cancel()
+        self.sound.stop()
 
     def receive_buffer(self, indata):
         x, y = zip(*indata[0])
@@ -151,18 +166,27 @@ class Sound():
         # print("modulating...")
         self.scheduler.enter(self.modulation_interval/1000, 1, self.audioModulator)
         # self.sound.b.setInput(Sig(float(np.mean(np.abs(self.y_data)))))
-        self.sound.fm.setIndex(float(np.std(np.abs(self.shared_modulator))))
+        self.sound.fm.setIndex(10*float(np.std(np.abs(self.shared_modulator))))
+        self.sound.sine.setFreq(440 + int((100*float(np.mean(np.abs(self.shared_modulator))))**2))
         # self.worker.sound.sine.setFreq(440+float(np.sum(np.abs(self.y_data))))
 
     def launch_sound(self):
         """
         source: launch app for streaming Audio Data
         """
-        process = mp.Process(
+        self.event = mp.Event()
+        self.process = mp.Process(
             name='sound',
             target=self.run,
+            args=[self.event]
         )
-        process.start()
+        self.process.start()
+
+    def terminate_sound(self):
+        self.event.set()
+        time.sleep(0.25)
+        self.process.terminate()
+        self.process.join()
 
 # YOUR APPLICATION
 class MainWindow(QMainWindow):
@@ -171,20 +195,14 @@ class MainWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        self.launch_cntr = 0
+
         self.ui.pushButton_Launch.clicked.connect(self.LaunchAcquisition)
         self.ui.pushButton_Stop.clicked.connect(self.StopAcquisition)
         self.ui.comboBox_examples.currentIndexChanged.connect(self.comboBoxExamplesChange)
         self.ui.comboBox_signalType.currentIndexChanged.connect(self.comboBoxSignalChange)
 
         self.readExamples()
-
-        #configure the session
-
-        #launch biosignals plux
-
-        #launch pyo
-
-        #start recording
 
     def readExamples(self):
         with open('example_config.json', 'r') as file:
@@ -228,14 +246,19 @@ class MainWindow(QMainWindow):
 
     def configurePlots(self):
         self.plot_duration = 3 #in seconds
-        self.frame_update = 0.015 #in seconds
+        self.signal_frame_update = 0.015 #in seconds
+        self.image_frame_update = 0.1 #in seconds
         self.signal_plot_size = int(self.plot_duration*self.sr)
-        self.num_frames = int(self.plot_duration // self.frame_update) #for spectogram computation
+        self.num_signal_frames = int(self.plot_duration // self.signal_frame_update) #for spectogram computation
+        self.num_image_frames = int(self.plot_duration // self.image_frame_update) #for spectogram computation
 
         self.x_plot = np.zeros(self.signal_plot_size)
         self.y_plot = np.zeros(self.signal_plot_size)
 
-        self.init_plots()
+        if(self.launch_cntr == 0):
+            self.init_plots()
+        else:
+            self.reset_plots()
 
     def init_biosignal_plot(self):
         # Create the pyqtgraph window
@@ -307,11 +330,32 @@ class MainWindow(QMainWindow):
         self.init_biosignal_plot()
         self.init_sound_plot()
         self.init_spectogram_plot()
+    
+    def reset_plots(self):
+        self.graphWidget_biosig.clear()
+        self.graphWidget_sound.clear()
+
+        # restart the graph so that a new motion instance is created and the last one is forgot
+        self.x = np.zeros(1000)
+        self.y = np.zeros(1000)
+        colors = ["k", "orange", "mediumseagreen", "dodgerblue", "slateblue", "violet"]
+        
+        self.curves_biosig = [pg.PlotCurveItem(x=self.x, y=self.y, autoDownsample=True, antialias=True,
+                                               pen=pg.mkPen(colors[i], width=2)) for i in range(self.nbr_channels)]
+        
+        self.curves_audio = [pg.PlotCurveItem(x=self.x, y=self.y, autoDownsample=True, antialias=True,
+                                        pen=pg.mkPen(colors[i], width=2)) for i in range(self.nbr_channels)]
+
+        for i, curve in enumerate(self.curves_audio):
+            self.graphWidget_sound.addItem(curve)
+
+        for i, curve in enumerate(self.curves_biosig):
+            self.graphWidget_biosig.addItem(curve)
 
     def init_streams(self):
         self.update_buffer_interval = 10 #ms between buffer updates
-        self.update_spectrum_interval = int(self.frame_update*1000) #ms between screen updates
-        self.update_signals_interval = int(self.frame_update*1000) #ms between screen updates
+        self.update_spectrum_interval = int(self.image_frame_update*1000) #ms between screen updates
+        self.update_signals_interval = int(self.signal_frame_update*1000) #ms between screen updates
         # self.update_fft_interval = 100 #ms
 
         #update graph timer
@@ -323,6 +367,10 @@ class MainWindow(QMainWindow):
         self.update_buffer_timer = QtCore.QTimer()
         self.update_buffer_timer.timeout.connect(self.update_buffer)
         self.update_buffer_timer.start(self.update_buffer_interval)
+
+    def close_streams(self):
+        self.update_timer.stop()
+        self.update_buffer_timer.stop()
 
     def update_buffer(self):
         x = np.frombuffer(self.biosignals.shared_index, dtype=np.float64)
@@ -348,14 +396,14 @@ class MainWindow(QMainWindow):
     def update_graph_biosig(self):
         #update biosig
         self.graphWidget_biosig.setXRange(self.x_plot[0], self.x_plot[-1])
-        self.curves_biosig[0].setData(self.x_plot[::4], self.y_plot[::4])
+        self.curves_biosig[0].setData(self.x_plot[::2], self.y_plot[::2])
         #update sound
         freq_buffer = np.frombuffer(self.sound.shared_freq_buffer, dtype=np.float64)
         self.graphWidget_sound.setXRange(0, 44100 // 10)
         self.curves_audio[0].setData(np.linspace(0, 44100 // 2, len(freq_buffer)), freq_buffer)
 
-        # self.spec_item.setImage(self.sound.shared_spec_buffer[:, :])
-
+        #update image
+        self.spec_item.setImage(np.frombuffer(self.sound.shared_spec_buffer, dtype=np.float64).reshape((self.num_image_frames, 512)))
 
     def configureAcquisition(self):
         self.sr = int(self.ui.textEdit_sampling_rate.toPlainText())
@@ -386,15 +434,28 @@ class MainWindow(QMainWindow):
 
     def StopAcquisition(self):
         self.updateButtonsStatesStop()
+        #stop timers
+        self.close_streams()
+        # reset plots
+        self.reset_plots()
+        #close biosignals
+        self.biosignals.terminate_biosignal()
+        #close sound
+        self.sound.terminate_sound()
+        #update cntr
+        self.launch_cntr += 1
+
+        #close sound
 
     def LaunchBiosignals(self):
         self.biosignals = Biosignals(self.mac, self.sr, self.buffer_size, self.signal)
         self.biosignals.launch_biosignals()
 
     def LaunchSound(self):
-        self.sound = Sound(self.plot_duration, self.frame_update, self.num_frames, self.biosignals.shared_values)
+        self.sound = Sound(self.plot_duration, self.image_frame_update, self.num_image_frames, self.biosignals.shared_values)
         # self.sound = Sound(self.plot_duration, self.frame_update, self.num_frames)
         self.sound.launch_sound()
+
 
     # def start(self):
 
