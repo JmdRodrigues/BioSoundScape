@@ -58,6 +58,9 @@ class In_BiosignalsPlux():
         elif("EDA" in name):
             self.transferFunction = self.edaTF
             return "EDA"
+        elif ("Force" in name):
+            self.transferFunction = self.forceTF
+            return "Force"
 
     def _set_on_data(self, fn):
         self.on_data = fn
@@ -120,14 +123,18 @@ class In_BiosignalsPlux():
 
     def edaTF(self, data):
         VCC = 3  # in volts
-
-        return (((data / (2 ** self.n_bits)) - 0.5) * VCC) / 0.12
+        return ((data / (2 ** self.n_bits)) * VCC) / 0.12 #in microsiemens
 
     def respTF(self, data):
         VCC = 3
         G_pzt = 1
 
         return (((data / ((2 ** self.n_bits)-1)) - 0.5) * VCC) / G_pzt
+
+    def forceTF(self, data):
+        Vout = (3*data)/(2**self.n_bits)
+        G = Vout/((6-Vout)*47)
+        return G #non calibrated force value
 
 def sampleAcquisition(address="BTH00:07:80:4D:2E:76",
                       duration=20,

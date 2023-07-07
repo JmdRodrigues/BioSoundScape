@@ -187,7 +187,7 @@ class Sound():
         print(self.experience)
         self.sound.experiences_init[self.experience]()
 
-        self.experiences = {"experience1": self.experience1, "experience2": self.experience2, "experience3": self.experience3, "experience4": self.experience4, "experience5": self.experience5, "experience6": self.experience6, "experience7": self.experience7}
+        self.experiences = {"experience1": self.experience1, "experience2": self.experience2, "experience3": self.experience3, "experience4": self.experience4, "experience5": self.experience5, "experience6": self.experience6, "experience7": self.experience7, "experience8": self.experience8}
 
         #set callback experience
         self.scheduler.enter(self.modulation_interval/1000, 1, self.experiences[self.experience])
@@ -196,7 +196,8 @@ class Sound():
     def experience1(self):
         self.scheduler.enter(self.modulation_interval / 1000, 1, self.experience1)
         env = np.mean(np.abs(self.shared_modulator))
-        self.sound.sine.setFreq(float(self.sound.audioTF1(env)))
+        # self.sound.sine.setFreq(float(self.sound.audioTF1(env)))
+        self.sound.sine.setCarrier([float(self.sound.audioTF1(env)),float(self.sound.audioTF1(env))])
 
     def experience2(self):
         self.scheduler.enter(self.modulation_interval / 1000, 1, self.experience2)
@@ -205,8 +206,8 @@ class Sound():
 
     def experience3(self):
         self.scheduler.enter(self.modulation_interval / 1000, 1, self.experience3)
-        env = np.mean(np.abs(self.shared_modulator))
-        self.sound.fm.setIndex(float(self.sound.audioTF3(env)))
+        # env = np.mean(np.abs(self.shared_modulator))
+        self.sound.fm.setCarrier(float(self.sound.audioTF3(np.mean(self.shared_modulator))))
         # print(self.shared_modulator[0])
         # self.sound.fm.setIndex(float(abs(self.shared_modulator[0])/20))
 
@@ -225,18 +226,28 @@ class Sound():
         # print(env)
         # self.sound.b.setInput(SigTo(float(env)))
         # self.sound.fm.setIndex(float(self.sound.audioTF5(2*self.shared_modulator[0])))
-        print(self.shared_modulator[0])
-        self.sound.fm.setIndex(float(self.sound.audioTF5(self.shared_modulator[0])))
+        self.sound.fm.setIndex(float(self.sound.audioTF5(np.mean(self.shared_modulator[:5]))))
+        # print(self.shared_modulator[0])
+        # self.sound.fm.setIndex(float(self.sound.audioTF5(self.shared_modulator[0])))
         # self.sound.fm.setIndex(float(self.sound.audioTF5(env/25)))
 
     def experience6(self):
         self.scheduler.enter(self.modulation_interval / 1000, 1, self.experience6)
-        self.sound.fm.setIndex(float(self.sound.audioTF6(self.shared_modulator[0])))
+
+        beat_ = np.mean(np.abs(np.diff(self.shared_modulator[:5])))
+        self.sound.b.setInput(SigTo(float(beat_*50)))
+        print(30*beat_)
+        self.sound.fm.setIndex(float(self.sound.audioTF5(np.mean(self.shared_modulator[:10]))))
 
     def experience7(self):
         print(self.shared_modulator[0])
         self.scheduler.enter(self.modulation_interval / 1000, 1, self.experience7)
         self.sound.sine.setFreq(float(self.sound.audioTF7(np.mean(self.shared_modulator))))
+
+    def experience8(self):
+        print(self.shared_modulator[0])
+        self.scheduler.enter(self.modulation_interval / 1000, 1, self.experience8)
+        self.sound.sine.setFreq(float(self.sound.audioTF8(np.mean(self.shared_modulator[:10]))))
 
     # def audioAmplitudeModulator(self):
     #     """Modulate Audio Amplitude output with direct value of signal"""
@@ -285,6 +296,8 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         self.intro_ui = intro_ui
+
+        self.intro_ui.pushButton_Stop.clicked.connect(self.StopAcquisition)
         self.current_example_id = current_example_id
 
         self.launch_cntr = 0
@@ -308,6 +321,15 @@ class MainWindow(QMainWindow):
         else:
             self.reset_plots()
 
+    def updateButtonsStatesStop(self):
+        self.intro_ui.pushButton_Stop.setEnabled(True)
+        self.intro_ui.pushButton_Launch.setEnabled(True)
+        self.intro_ui.comboBox_examples.setEnabled(True)
+        self.intro_ui.textEdit_signalType.setDisabled(True)
+        self.intro_ui.textEdit_mac_address.setDisabled(True)
+        self.intro_ui.textEdit_sampling_rate.setDisabled(True)
+        self.intro_ui.textEdit_buffer_size.setDisabled(True)
+
     def init_biosignal_plot(self):
         # Create the pyqtgraph window
         self.layout_biosig = QGridLayout()
@@ -324,6 +346,7 @@ class MainWindow(QMainWindow):
         # Set Range
         self.graphWidget_biosig.getPlotItem().hideAxis("bottom")
         self.graphWidget_biosig.getPlotItem().hideAxis("left")
+        self.graphWidget_biosig.getPlotItem().setTitle("Biosignal")
 
         self.graphWidget_biosig.getAxis("left").setTextPen("w")
         # set size layout
@@ -339,7 +362,7 @@ class MainWindow(QMainWindow):
         self.y = np.zeros(self.plot_duration*self.sr)
         colors = ["w", "dodgerblue", "k", "orange", "mediumseagreen", "slateblue", "violet"]
         self.curves_biosig = [pg.PlotCurveItem(x=self.x, y=self.y, autoDownsample=True, antialias=True,
-                                               pen=pg.mkPen(colors[i], width=2)) for i in range(self.nbr_channels)]
+                                               pen=pg.mkPen(colors[0], width=2)) for i in range(self.nbr_channels)]
 
         for i, curve in enumerate(self.curves_biosig):
             self.graphWidget_biosig.addItem(curve)
@@ -361,6 +384,7 @@ class MainWindow(QMainWindow):
         # Set Range
         self.graphWidget_biosig_thumb.getPlotItem().hideAxis("bottom")
         self.graphWidget_biosig_thumb.getPlotItem().hideAxis("left")
+        self.graphWidget_biosig_thumb.getPlotItem().setTitle("Biosignal Snippet")
 
         self.graphWidget_biosig_thumb.getAxis("left").setTextPen("w")
         # set size layout
@@ -376,7 +400,7 @@ class MainWindow(QMainWindow):
         self.y = np.zeros(1*self.sr)
         colors = ["w", "dodgerblue", "k", "orange", "mediumseagreen", "slateblue", "violet"]
         self.curves_biosig_thumb = [pg.PlotCurveItem(x=self.x, y=self.y, autoDownsample=True, antialias=True,
-                                               pen=pg.mkPen(colors[i], width=2)) for i in range(self.nbr_channels)]
+                                               pen=pg.mkPen(colors[0], width=2)) for i in range(self.nbr_channels)]
 
         for i, curve in enumerate(self.curves_biosig_thumb):
             self.graphWidget_biosig_thumb.addItem(curve)
@@ -393,6 +417,7 @@ class MainWindow(QMainWindow):
 
         self.graphWidget_sound.getPlotItem().hideAxis("left")
         self.graphWidget_sound.getPlotItem().hideAxis("bottom")
+        self.graphWidget_sound.getPlotItem().setTitle("FFT")
         # self.graphWidget_sound.getPlotItem().setLabel("bottom", "Frequency", units="Hz")
 
         # self.graphWidget_biosig.getAxis("left").setTextPen("w")
@@ -409,7 +434,7 @@ class MainWindow(QMainWindow):
         self.y = np.zeros(512)
         colors = ["w", "dodgerblue", "k", "orange", "mediumseagreen", "dodgerblue", "slateblue", "violet"]
         self.curves_audio = [pg.PlotCurveItem(x=self.x, y=self.y, autoDownsample=True, antialias=True,
-                                              pen=pg.mkPen(colors[i], width=2)) for i in range(self.nbr_channels)]
+                                              pen=pg.mkPen(colors[0], width=2)) for i in range(self.nbr_channels)]
 
         for i, curve in enumerate(self.curves_audio):
             self.graphWidget_sound.addItem(curve)
@@ -426,6 +451,7 @@ class MainWindow(QMainWindow):
 
         self.graphWidget_soundwave.getPlotItem().hideAxis("left")
         self.graphWidget_soundwave.getPlotItem().hideAxis("bottom")
+        self.graphWidget_soundwave.getPlotItem().setTitle("Audio Wave")
         # self.graphWidget_sound.getPlotItem().setLabel("bottom", "Frequency", units="Hz")
 
         self.graphWidget_soundwave.setSizePolicy(
@@ -440,7 +466,7 @@ class MainWindow(QMainWindow):
         self.y = np.zeros(512)
         colors = ["w", "dodgerblue", "k", "orange", "mediumseagreen", "dodgerblue", "slateblue", "violet"]
         self.curves_audiowave = [pg.PlotCurveItem(x=self.x, y=self.y, autoDownsample=True, antialias=True,
-                                              pen=pg.mkPen(colors[i], width=2)) for i in range(self.nbr_channels)]
+                                              pen=pg.mkPen(colors[0], width=2)) for i in range(self.nbr_channels)]
 
         for i, curve in enumerate(self.curves_audiowave):
             self.graphWidget_soundwave.addItem(curve)
@@ -451,6 +477,7 @@ class MainWindow(QMainWindow):
         self.view = pg.GraphicsLayoutWidget()
         self.layout_spec.addWidget(self.view)
         self.plot = self.view.addPlot()
+        self.plot.setTitle("Spectrogram")
         self.view.setBackground("#545454")
         self.spec_item = pg.ImageItem()
         self.plot.addItem(self.spec_item)
@@ -504,10 +531,10 @@ class MainWindow(QMainWindow):
         colors = ["dodgerblue", "k", "orange", "mediumseagreen", "dodgerblue", "slateblue", "violet"]
         
         self.curves_biosig = [pg.PlotCurveItem(x=self.x, y=self.y, autoDownsample=True, antialias=True,
-                                               pen=pg.mkPen(colors[i], width=2)) for i in range(self.nbr_channels)]
+                                               pen=pg.mkPen(colors[0], width=2)) for i in range(self.nbr_channels)]
         
         self.curves_audio = [pg.PlotCurveItem(x=self.x, y=self.y, autoDownsample=True, antialias=True,
-                                        pen=pg.mkPen(colors[i], width=2)) for i in range(self.nbr_channels)]
+                                        pen=pg.mkPen(colors[0], width=2)) for i in range(self.nbr_channels)]
 
         for i, curve in enumerate(self.curves_audio):
             self.graphWidget_sound.addItem(curve)
@@ -544,9 +571,9 @@ class MainWindow(QMainWindow):
 
         if(delay > 0):
             self.x_plot[:-delay] = self.x_plot[delay:]
-            self.x_plot[-self.buffer_size:] = x
+            self.x_plot[pos-delay:] = x
             self.y_plot[:-delay] = self.y_plot[delay:]
-            self.y_plot[-self.buffer_size:] = y
+            self.y_plot[pos-delay:] = y
         elif(delay < 0):
             # print("data was lost")
             self.x_plot[:-delay] = self.x_plot[delay:]
@@ -558,8 +585,9 @@ class MainWindow(QMainWindow):
 
     def update_graph_biosig(self):
         #update biosig
-        self.graphWidget_biosig.setXRange(self.x_plot[0]/self.sr, self.x_plot[-1]/self.sr)
-        self.curves_biosig[0].setData(self.x_plot/self.sr, self.y_plot)
+        # self.graphWidget_biosig.setXRange(min(self.x_plot[self.x_plot>0])/self.sr, max(self.x_plot)/self.sr)
+        self.graphWidget_biosig.setXRange(0, self.plot_duration)
+        self.curves_biosig[0].setData(np.linspace(0, self.plot_duration, int(self.plot_duration*self.sr)), self.y_plot)
         #update thumbnail
         self.graphWidget_biosig_thumb.setXRange(0, 1)
         self.curves_biosig_thumb[0].setData(np.linspace(0, 1, int(1*self.sr)), self.y_plot[-int(1*self.sr):])
@@ -584,7 +612,7 @@ class MainWindow(QMainWindow):
     def configureAcquisition(self):
         self.sr = int(self.intro_ui.textEdit_sampling_rate.toPlainText())
         self.mac = self.intro_ui.textEdit_mac_address.toPlainText()
-        self.signal = [self.intro_ui.comboBox_signalType.currentText()]
+        self.signal = [self.intro_ui.textEdit_signalType.toPlainText()]
         self.buffer_size = int(self.intro_ui.textEdit_buffer_size.toPlainText())
         # self.buffer_size = 68 #TODO: check if needs to be added as a configuring parameter
 
@@ -623,6 +651,7 @@ class MainWindow(QMainWindow):
         self.launch_cntr += 1
 
         #close sound
+        # self.window().close()
 
     def LaunchBiosignals(self):
         self.biosignals = Biosignals(self.mac, self.sr, self.buffer_size, self.signal)
@@ -662,9 +691,9 @@ class LoadScreen(QMainWindow):
         ########################################################################
 
         ## PushButtons to Launch
+        self.updateButtonsStatesLaunch()
         self.readExamples()
         self.ui.pushButton_Launch.clicked.connect(self.LaunchMW)
-        # self.ui.pushButton_Stop.clicked.connect(self.StopAcquisition)
         self.ui.comboBox_examples.currentIndexChanged.connect(self.comboBoxExamplesChange)
         # self.ui.comboBox_signalType.currentIndexChanged.connect(self.comboBoxSignalChange)
 
@@ -694,14 +723,20 @@ class LoadScreen(QMainWindow):
         self.example_ind = example_text.split()[1]
         self.current_example_id = "experience" + self.example_ind
         self.current_example = self.examples[self.current_example_id]
+        self.ui.textEdit_buffer_size.setTextColor("gray")
+        self.ui.textEdit_sampling_rate.setTextColor("gray")
+        self.ui.textEdit_signalType.setTextColor("gray")
+        self.ui.textEdit_mac_address.setTextColor("gray")
+
         self.ui.textEdit_mac_address.setText(self.current_example["mac"])
         self.ui.textEdit_sampling_rate.setText(str(self.current_example["sr"]))
         self.ui.textEdit_buffer_size.setText(str(self.current_example["buffer_size"]))
-        signal_index = self.ui.comboBox_signalType.findText(self.current_example["signal"])
-        self.ui.comboBox_signalType.setCurrentIndex(signal_index)
+        # signal_index = self.ui.comboBox_signalType.findText(self.current_example["signal"])
+        # self.ui.comboBox_signalType.setCurrentIndex(signal_index)
+        self.ui.textEdit_signalType.setText(str(self.current_example["signal"]))
 
-    def comboBoxSignalChange(self, index):
-        self.signal = [self.ui.comboBox_signalType.currentText()]
+    # def comboBoxSignalChange(self, index):
+    #     self.signal = [self.ui.comboBox_signalType.currentText()]
 
     def comboBoxExamplesChange(self, index):
         example_text = self.ui.comboBox_examples.currentText()
@@ -710,21 +745,9 @@ class LoadScreen(QMainWindow):
 
     def updateButtonsStatesLaunch(self):
         self.ui.pushButton_Stop.setEnabled(True)
-        self.ui.pushButton_Launch.setDisabled(True)
-        self.ui.comboBox_signalType.setDisabled(True)
-        self.ui.comboBox_examples.setDisabled(True)
-        self.ui.textEdit_mac_address.setDisabled(True)
-        self.ui.textEdit_sampling_rate.setDisabled(True)
-        self.ui.textEdit_buffer_size.setDisabled(True)
+        # self.ui.pushButton_Launch.setDisabled(True)
+        # self.ui.comboBox_examples.setDisabled(True)
 
-    def updateButtonsStatesStop(self):
-        self.ui.pushButton_Stop.setEnabled(False)
-        self.ui.pushButton_Launch.setDisabled(False)
-        self.ui.comboBox_signalType.setDisabled(False)
-        self.ui.comboBox_examples.setDisabled(False)
-        self.ui.textEdit_mac_address.setDisabled(False)
-        self.ui.textEdit_sampling_rate.setDisabled(False)
-        self.ui.textEdit_buffer_size.setDisabled(False)
 
     ## ==> APP FUNCTIONS
     ########################################################################

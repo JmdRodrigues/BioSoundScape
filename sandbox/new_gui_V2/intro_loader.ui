@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoadingScreen</class>
+ <widget class="QMainWindow" name="LoadingScreen">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>765</width>
+    <height>530</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>10</number>
+    </property>
+    <property name="topMargin">
+     <number>10</number>
+    </property>
+    <property name="rightMargin">
+     <number>10</number>
+    </property>
+    <property name="bottomMargin">
+     <number>10</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="dropShadowFrame">
+      <property name="styleSheet">
+       <string notr="true">QFrame{
+background-color:rgb(84, 84, 84);
+color: rgb(255, 255, 255);
+}</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="Title">
+       <property name="geometry">
+        <rect>
+         <x>60</x>
+         <y>100</y>
+         <width>651</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Verdana</family>
+         <pointsize>40</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(235, 235, 235)</string>
+       </property>
+       <property name="text">
+        <string>&lt;strong&gt;Bio&lt;/strong&gt;SoundScape</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="plux_logo">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>450</y>
+         <width>101</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap>images/plux_logo.png</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="nova_logo">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>420</y>
+         <width>131</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="pixmap">
+        <pixmap>images/nova_logo.png</pixmap>
+       </property>
+       <property name="scaledContents">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="textEdit_mac_address">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>470</y>
+         <width>151</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;00:07:80:8C:AD:C9&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="placeholderText">
+        <string>mac address...</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="textEdit_sampling_rate">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>550</x>
+         <y>470</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;1000&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="placeholderText">
+        <string>sampling rate</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="textEdit_buffer_size">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>620</x>
+         <y>470</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;512&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="acceptRichText">
+        <bool>false</bool>
+       </property>
+       <property name="placeholderText">
+        <string>sampling rate</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_macAddress">
+       <property name="geometry">
+        <rect>
+         <x>420</x>
+         <y>450</y>
+         <width>55</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>MAC</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_samplingRate">
+       <property name="geometry">
+        <rect>
+         <x>540</x>
+         <y>450</y>
+         <width>55</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>SR</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_buffer_size">
+       <property name="geometry">
+        <rect>
+         <x>600</x>
+         <y>450</y>
+         <width>81</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Buffer Size</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_Stop">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>430</x>
+         <y>290</y>
+         <width>93</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Stop</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushButton_Launch">
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>290</y>
+         <width>93</width>
+         <height>28</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Launch</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBox_examples">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>240</x>
+         <y>250</y>
+         <width>291</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Verdana</family>
+        </font>
+       </property>
+       <item>
+        <property name="text">
+         <string>Experience 1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Experience 2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Experience 3</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Experience 4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Experience 5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Experience 6</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Experience 7</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Experience 8</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Experience 9</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Experience 10</string>
+        </property>
+       </item>
+      </widget>
+      <widget class="QLabel" name="label_signalType">
+       <property name="geometry">
+        <rect>
+         <x>680</x>
+         <y>450</y>
+         <width>55</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Signal</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="textEdit_signalType">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>690</x>
+         <y>470</y>
+         <width>51</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;ECG&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="acceptRichText">
+        <bool>false</bool>
+       </property>
+       <property name="placeholderText">
+        <string>sampling rate</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>765</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -4,6 +4,7 @@ QPushButton {
     background-repeat: no-repeat;
     background-color: rgb(27, 29, 35);
     text-align: center;
+    color: #e0e0e0;
 }
 QPushButton[Active=true] {
     background-image: ICON_REPLACE;
@@ -23,7 +24,8 @@ QPushButton:pressed {
 }
 
 QComboBox{
-    background-color: rgb(33, 37, 43);
+    background-color: rgb(27, 29, 35);
+    color: white
 }
 
 QTextEdit{

@@ -31,4 +31,6 @@ car = [random.triangular(g_sharp_freq-delta_, g_sharp_freq+delta_) for i in rang
 rat = [random.choice([.25, .5, 1, 1.25, 1.5, 2]) for i in range(nbr_waves)]
 fm = FM(carrier=car, ratio=rat, index=sf_player2, mul=1.5/nbr_waves).out()
 
+Spectrum(fm)
+
 s.gui(locals())

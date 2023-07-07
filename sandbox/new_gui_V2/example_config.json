@@ -1,9 +1,11 @@
 {
   "experience1": {"sr": 1000, "signal": "EMG", "buffer_size":512, "mac": "00:07:80:8C:AD:C9", "tag": "1"},
   "experience2": {"sr": 1000, "signal": "EMG", "buffer_size":512, "mac": "00:07:80:8C:AD:C9", "tag": "2"},
-  "experience3": {"sr": 1000, "signal": "ACC_X", "buffer_size":512, "mac": "00:07:80:8C:AD:C9", "tag": "3"},
+  "experience3": {"sr": 100, "signal": "Force", "buffer_size":68, "mac": "00:07:80:8C:AD:C9", "tag": "3"},
   "experience4": {"sr": 1000, "signal": "EMG", "buffer_size":512, "mac": "00:07:80:8C:AD:C9", "tag": "4"},
   "experience5": {"sr": 360, "signal": "ECG", "buffer_size":68, "mac": "00:07:80:8C:AD:C9", "tag": "5"},
   "experience6": {"sr": 360, "signal": "ECG", "buffer_size":68, "mac": "00:07:80:8C:AD:C9", "tag": "6"},
-  "experience7": {"sr": 360, "signal": "EDA", "buffer_size":68, "mac": "00:07:80:8C:AD:C9", "tag": "7"}
+  "experience7": {"sr": 360, "signal": "EDA", "buffer_size":68, "mac": "00:07:80:8C:AD:C9", "tag": "7"},
+  "experience8": {"sr": 360, "signal": "ECG", "buffer_size":68, "mac": "00:07:80:8C:AD:C9", "tag": "8"},
+  "experience9": {"sr": 1000, "signal": "ACC", "buffer_size":68, "mac": "00:07:80:8C:AD:C9", "tag": "9"}
 }

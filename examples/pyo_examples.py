@@ -1,51 +1,34 @@
-import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel, QPushButton
+from pyo import *
 
+s = Server().boot()
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Page Navigation Example")
-        self.setGeometry(100, 100, 400, 200)
+# Sets fundamental frequency.
+freq = 187.5
 
-        # Create a main widget and layout
-        self.main_widget = QWidget(self)
-        self.layout = QVBoxLayout(self.main_widget)
+# Impulse train generator.
+lfo1 = Sine(0.1).range(1, 50)
+osc1 = Blit(freq=freq, harms=lfo1, mul=0.3)
 
-        # Create a label and button in the main widget
-        self.label = QLabel("Main Page", self.main_widget)
-        self.layout.addWidget(self.label)
-        self.next_button = QPushButton("Next", self.main_widget)
-        self.next_button.clicked.connect(self.nextClicked)
-        self.layout.addWidget(self.next_button)
+# RC circuit.
+lfo2 = Sine(0.1, mul=0.5, add=0.5)
+osc2 = RCOsc(freq=freq, sharp=lfo2, mul=0.3)
 
-        # Set the main widget as the central widget
-        self.setCentralWidget(self.main_widget)
+# Sine wave oscillator with feedback.
+lfo3 = Sine(0.1).range(0, 0.18)
+osc3 = SineLoop(freq=freq, feedback=lfo3, mul=0.3)
 
-        # Create a new page widget
-        self.next_page = QWidget(self)
-        self.next_layout = QVBoxLayout(self.next_page)
+# Roland JP-8000 Supersaw emulator.
+lfo4 = Sine(0.1).range(0.1, 0.75)
+osc4 = SuperSaw(freq=freq, detune=lfo4, mul=0.3)
 
-        # Create a label and button in the new page widget
-        self.next_label = QLabel("Next Page", self.next_page)
-        self.next_layout.addWidget(self.next_label)
-        self.back_button = QPushButton("Back", self.next_page)
-        self.back_button.clicked.connect(self.backClicked)
-        self.next_layout.addWidget(self.back_button)
+# Interpolates between input objects to produce a single output
+sel = Selector([osc1, osc2, osc3, osc4]).out()
+sel.ctrl(title="Input interpolator (0=Blit, 1=RCOsc, 2=SineLoop, 3=SuperSaw)")
 
-    def nextClicked(self):
-        # Set the new page widget as the central widget
-        self.setCentralWidget(self.next_page)
-        # self.main_widget.deleteLater()
+# Displays the waveform of the chosen source
+sc = Scope(sel)
 
-    def backClicked(self):
-        # Set the main widget as the central widget
-        self.setCentralWidget(self.main_widget)
+# Displays the spectrum contents of the chosen source
+sp = Spectrum(sel)
 
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    main_window = MainWindow()
-    main_window.show()
-    sys.exit(app.exec_())
+s.gui(locals())
