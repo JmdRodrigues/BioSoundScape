@@ -326,7 +326,7 @@ class MainWindow(QMainWindow):
         self.intro_ui.pushButton_Launch.setEnabled(True)
         self.intro_ui.comboBox_examples.setEnabled(True)
         self.intro_ui.textEdit_signalType.setDisabled(True)
-        self.intro_ui.textEdit_mac_address.setDisabled(True)
+        self.intro_ui.textEdit_mac_address.setEnabled(True)
         self.intro_ui.textEdit_sampling_rate.setDisabled(True)
         self.intro_ui.textEdit_buffer_size.setDisabled(True)
 
